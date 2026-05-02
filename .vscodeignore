@@ -1,0 +1,7 @@
+.vscode/**
+.specstory/**
+*.vsix
+*.zip
+*.log
+backups/**
+releases/**

@@ -1,0 +1,98 @@
+{
+  "name": "theme-manager-by-leostriker",
+  "displayName": "Theme Manager By Leostriker",
+  "description": "Gestor visual de temas, iconos y personalización estética para Antigravity",
+  "version": "3.3.2",
+  "publisher": "leostriker111",
+  "license": "MIT",
+  "icon": "assets/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leostriker111/theme-manager"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": ["Themes", "Other"],
+  "main": "./src/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "themeManagerContainer",
+          "title": "Temas",
+          "icon": "./assets/icons/palette.svg"
+        }
+      ]
+    },
+    "views": {
+      "themeManagerContainer": [
+        {
+          "type": "webview",
+          "id": "themeManagerGallery",
+          "name": "Theme Manager",
+          "icon": "./assets/icons/palette.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "themeManager.refresh",
+        "title": "Actualizar lista de temas",
+        "category": "Theme Manager",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "themeManager.removeBackground",
+        "title": "Quitar imagen de fondo",
+        "category": "Theme Manager"
+      },
+      {
+        "command": "themeManager.openGallery",
+        "title": "Abrir Theme Manager",
+        "category": "Theme Manager"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "themeManager.refresh",
+          "when": "view == themeManagerGallery",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Theme Manager",
+      "properties": {
+        "themeManager.backgroundImagePath": {
+          "type": "string",
+          "default": "",
+          "description": "Ruta de la imagen de fondo actual"
+        },
+        "themeManager.backgroundOpacity": {
+          "type": "number",
+          "default": 0.15,
+          "minimum": 0.01,
+          "maximum": 0.99,
+          "description": "Opacidad de la imagen de fondo"
+        },
+        "themeManager.customThemes": {
+          "type": "array",
+          "default": [],
+          "description": "Temas personalizados creados por el usuario"
+        },
+        "themeManager.favoriteThemes": {
+          "type": "array",
+          "default": [],
+          "description": "IDs de los temas marcados como favoritos"
+        },
+        "themeManager.themeTags": {
+          "type": "object",
+          "default": {},
+          "description": "Mapeo de etiquetas por tema (ID -> array de etiquetas)"
+        }
+      }
+    }
+  }
+}
