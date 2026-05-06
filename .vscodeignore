@@ -6,3 +6,5 @@
 backups/**
 releases/**
 docs/**
+.documentacion/**
+src/providers/GalleryViewProvider.js

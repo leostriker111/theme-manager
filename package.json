@@ -14,6 +14,9 @@
     "vscode": "^1.74.0"
   },
   "categories": ["Themes", "Other"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./src/extension.js",
   "contributes": {
     "viewsContainers": {
