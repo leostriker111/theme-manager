@@ -29,13 +29,22 @@
                 <input type="text" id="themeSearch" placeholder="🔍 Buscar tema o #etiqueta..."/>
                 <div id="versionInfo" class="version-text"></div>
             </div>
+
+            <!-- Controles de carpetas — debajo de la búsqueda, arriba de las carpetas -->
+            <div class="folders-toolbar">
+                <button id="btnToggleFolders" class="btn-folders" title="Ocultar/Mostrar carpetas de temas">
+                    📂 Ocultar Carpetas
+                </button>
+            </div>
+
             <div id="themeCurrentBadge" class="current-badge"></div>
             <div id="themeListContainer">
                 <div id="themeGroups"></div>
             </div>
+
             <!-- Barra flotante de utilidades -->
             <div class="random-toolbar">
-                <button id="btnToggleFolders" class="btn-secondary btn-push-right" title="Ocultar/Mostrar carpetas de temas">📂 Ocultar Carpetas</button>
+                <div id="btnToggleFavCurrent" class="heart-btn" title="Marcar/desmarcar tema actual como favorito">🤍</div>
                 <div id="btnRandomFav" class="fav-toggle" title="Solo entre favoritos">⭐</div>
                 <button id="btnRandomGeneric" class="btn-random">🎲 Aleatorio</button>
             </div>
@@ -97,6 +106,16 @@
                 <p class="hint">Los cambios se aplican inmediatamente.</p>
             </div>
 
+            <!-- Botón Modo Zen -->
+            <div class="zen-row">
+                <button id="btnZenMode" class="btn-zen" title="Ocultar todos los paneles y distracciones">
+                    🧘 Modo Zen
+                </button>
+                <button id="btnZenRestore" class="btn-zen-restore hidden" title="Restaurar todos los componentes ocultos">
+                    ↩ Restaurar Todo
+                </button>
+            </div>
+
             <div class="ui-controls">
                 <div class="control-row">
                     <label for="editorFontSize">Fuente del editor (<span id="editorFontSizeVal">14</span>px)</label>
@@ -120,6 +139,7 @@
                 <div class="control-row control-row--inline">
                     <label for="uiMenuVisible">Barra de Menú visible</label>
                     <input type="checkbox" id="uiMenuVisible" checked aria-label="Mostrar barra de menú"/>
+                    <span class="hint-shortcut">Alt para reactivar</span>
                 </div>
                 <div class="control-row control-row--inline">
                     <label for="uiActivityBarPos">Barra lateral a la izquierda</label>
@@ -129,10 +149,41 @@
                     <label for="uiStatusBar">Barra inferior (Status Bar)</label>
                     <input type="checkbox" id="uiStatusBar" checked aria-label="Mostrar barra de estado"/>
                 </div>
+                <div class="control-row control-row--inline">
+                    <label for="uiBreadcrumbs">Ruta de archivo (Breadcrumbs)</label>
+                    <input type="checkbox" id="uiBreadcrumbs" checked aria-label="Mostrar breadcrumbs"/>
+                </div>
+                <div class="control-row control-row--inline">
+                    <label for="uiLineNumbers">Números de línea</label>
+                    <input type="checkbox" id="uiLineNumbers" checked aria-label="Mostrar números de línea"/>
+                </div>
+                <div class="control-row control-row--inline">
+                    <label for="uiEditorActions">Botones del editor (split, maximize…)</label>
+                    <input type="checkbox" id="uiEditorActions" checked aria-label="Mostrar botones de acciones del editor"/>
+                </div>
 
+                <hr class="ui-divider"/>
+
+                <!-- Selector de familia de fuente con opciones predefinidas -->
                 <div class="control-row">
-                    <label for="fontFamily">Familia de fuente</label>
-                    <input type="text" id="fontFamily" placeholder="'Fira Code', monospace" aria-label="Familia de fuente del editor"/>
+                    <label for="fontFamilySelect">Familia de fuente</label>
+                    <div class="font-selector-row">
+                        <select id="fontFamilySelect" aria-label="Seleccionar familia de fuente del editor">
+                            <option value="">-- Predefinidas --</option>
+                            <option value="'Fira Code', monospace">Fira Code</option>
+                            <option value="'Cascadia Code', monospace">Cascadia Code</option>
+                            <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                            <option value="'Source Code Pro', monospace">Source Code Pro</option>
+                            <option value="'Hack', monospace">Hack</option>
+                            <option value="'Inconsolata', monospace">Inconsolata</option>
+                            <option value="'IBM Plex Mono', monospace">IBM Plex Mono</option>
+                            <option value="Consolas, monospace">Consolas (default Windows)</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                            <option value="__custom__">✏️ Escribir manualmente...</option>
+                        </select>
+                        <input type="text" id="fontFamily" placeholder="'Mi Fuente', monospace"
+                               aria-label="Familia de fuente personalizada" class="hidden"/>
+                    </div>
                 </div>
             </div>
         </section>
@@ -141,6 +192,7 @@
         <section id="tab-creator" class="tab-content">
             <div class="section-header">
                 <h3>Crear tema personalizado</h3>
+                <p class="hint">Los colores se previsualizan en vivo en el IDE. Guarda para conservarlos.</p>
             </div>
 
             <div class="creator-tools">

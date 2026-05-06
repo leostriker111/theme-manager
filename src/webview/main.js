@@ -19,6 +19,13 @@
         masterSwitchActive: true
     };
 
+    // Claves de color del Creator — necesarias para resetCreatorPreview al salir
+    const CREATOR_COLOR_KEYS = [
+        'editor.background', 'editor.foreground', 'sideBar.background',
+        'button.background', 'titleBar.activeBackground', 'terminal.background',
+        'editor.lineHighlightBackground', 'list.hoverBackground'
+    ];
+
     // ── DOM ──
     const $ = id => document.getElementById(id);
     const $$ = sel => document.querySelectorAll(sel);
@@ -26,11 +33,12 @@
     const tabBtns  = $$('.tab-btn');
     const tabPanes = $$('.tab-content');
 
-    const themeSearch    = $('themeSearch');
-    const themeGroups    = $('themeGroups');
-    const themeCurrent   = $('themeCurrentBadge');
-    const btnRandom      = $('btnRandomGeneric');
-    const btnRandomFav   = $('btnRandomFav');
+    const themeSearch  = $('themeSearch');
+    const themeGroups  = $('themeGroups');
+    const themeCurrent = $('themeCurrentBadge');
+    const btnRandom    = $('btnRandomGeneric');
+    const btnRandomFav = $('btnRandomFav');
+    const btnToggleFavCurrent = $('btnToggleFavCurrent');
 
     // UI
     const editorFontSize    = $('editorFontSize');
@@ -43,6 +51,10 @@
     const uiMenuVisible     = $('uiMenuVisible');
     const uiActivityBar     = $('uiActivityBarPos');
     const uiStatusBar       = $('uiStatusBar');
+    const uiBreadcrumbs     = $('uiBreadcrumbs');
+    const uiLineNumbers     = $('uiLineNumbers');
+    const uiEditorActions   = $('uiEditorActions');
+    const fontFamilySelect  = $('fontFamilySelect');
     const fontFamily        = $('fontFamily');
 
     // Crear
@@ -51,12 +63,22 @@
     const savedThemes    = $('savedThemesList');
 
     // ── NAVEGACIÓN ──
+    let previousTab = 'colors';
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            const leaving = previousTab;
+            const entering = btn.dataset.tab;
+
+            // Al salir de Creator, restaurar la preview en vivo
+            if (leaving === 'creator' && entering !== 'creator') {
+                vscode.postMessage({ command: 'resetCreatorPreview', keys: CREATOR_COLOR_KEYS });
+            }
+
             tabBtns.forEach(b => b.classList.remove('active'));
             tabPanes.forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            $(`tab-${btn.dataset.tab}`).classList.add('active');
+            $(`tab-${entering}`).classList.add('active');
+            previousTab = entering;
         });
     });
 
@@ -65,8 +87,8 @@
         const q = filter.toLowerCase().trim();
         themeGroups.innerHTML = '';
 
-        const allMatching = state.colorThemeGroups.flatMap(g => g.themes).filter(t => 
-            t.label.toLowerCase().includes(q) || 
+        const allMatching = state.colorThemeGroups.flatMap(g => g.themes).filter(t =>
+            t.label.toLowerCase().includes(q) ||
             (q.startsWith('#') && t.tags.some(tag => tag.toLowerCase().includes(q.substring(1))))
         );
 
@@ -78,14 +100,14 @@
             }
         }
 
-        // Mis Temas
+        // Mis Temas (custom)
         const misTemas = allMatching.filter(t => t.extensionId === 'custom');
         if (misTemas.length > 0) renderGroup('⭐ Mis Temas', misTemas);
 
-        // Favoritos
+        // Favoritos — con ⭐ y etiquetas, siempre arriba
         const favs = allMatching.filter(t => t.isFavorite && t.extensionId !== 'custom');
         if (favs.length > 0) renderGroup('💖 Favoritos', favs);
-        
+
         // Resto por grupos
         state.colorThemeGroups.forEach(group => {
             if (group.extensionId === 'custom') return;
@@ -96,16 +118,18 @@
         if (allMatching.length === 0) {
             themeGroups.innerHTML = `<div class="saved-theme-empty">No hay resultados para "${escapeHtml(filter)}"</div>`;
         }
+
+        updateHeartBtn();
     }
 
     function renderGroup(title, themes, options = {}) {
         const groupEl = document.createElement('div');
         groupEl.className = 'theme-group';
-        
+
         const header = document.createElement('div');
         header.className = 'group-header';
         header.innerHTML = `
-            <span>${escapeHtml(title)}</span> 
+            <span>${escapeHtml(title)}</span>
             <div class="header-right">
                 ${options.actions || ''}
                 <span class="collapse-icon">▼</span>
@@ -122,7 +146,8 @@
         themes.forEach(t => {
             const item = document.createElement('div');
             item.className = 'theme-item' + (t.id === state.currentColorTheme ? ' active' : '');
-            
+            item.dataset.themeId = t.id;
+
             const content = document.createElement('div');
             content.className = 'item-main';
             content.innerHTML = `<span class="type-dot ${t.uiTheme}"></span> <span>${escapeHtml(t.label)}</span>`;
@@ -139,9 +164,9 @@
                 const badge = document.createElement('div');
                 badge.className = 'tag-badge';
                 badge.innerHTML = `<span>#${escapeHtml(tag)}</span><span class="remove-tag">×</span>`;
-                badge.querySelector('.remove-tag').onclick = (e) => { 
-                    e.stopPropagation(); 
-                    vscode.postMessage({ command: 'removeTag', themeId: t.id, tag }); 
+                badge.querySelector('.remove-tag').onclick = (e) => {
+                    e.stopPropagation();
+                    vscode.postMessage({ command: 'removeTag', themeId: t.id, tag });
                 };
                 tags.appendChild(badge);
             });
@@ -151,11 +176,7 @@
             addTag.innerHTML = '+ Etiqueta';
             addTag.onclick = (e) => {
                 e.stopPropagation();
-                vscode.postMessage({ 
-                    command: 'requestAddTag', 
-                    themeId: t.id, 
-                    themeLabel: t.label 
-                });
+                vscode.postMessage({ command: 'requestAddTag', themeId: t.id, themeLabel: t.label });
             };
             tags.appendChild(addTag);
 
@@ -184,9 +205,23 @@
         state.currentColorTheme = id;
         vscode.postMessage({ command: 'applyTheme', themeId: id });
         updateBadges();
-        // Feedback visual inmediato
         $$('.theme-item').forEach(el => el.classList.toggle('active', el.dataset.themeId === id));
     }
+
+    // ── BOTÓN CORAZÓN (favorito del tema actual) ──
+    function updateHeartBtn() {
+        if (!btnToggleFavCurrent) return;
+        const isFav = state.allThemesFlat.some(
+            t => t.id === state.currentColorTheme && t.isFavorite
+        );
+        btnToggleFavCurrent.textContent = isFav ? '❤️' : '🤍';
+        btnToggleFavCurrent.classList.toggle('active', isFav);
+    }
+
+    btnToggleFavCurrent.onclick = () => {
+        if (!state.currentColorTheme) return;
+        vscode.postMessage({ command: 'toggleFavorite', themeId: state.currentColorTheme });
+    };
 
     // ── ALEATORIO ──
     btnRandom.onclick = () => {
@@ -195,6 +230,8 @@
         if (pool.length === 0) return;
         const pick = pool[Math.floor(Math.random() * pool.length)];
         applyTheme(pick.id);
+        // ScrollIntoView al tema elegido — solo al usar aleatorio
+        scrollToActiveTheme();
     };
 
     btnRandomFav.onclick = () => {
@@ -202,6 +239,18 @@
         btnRandomFav.classList.toggle('active', state.randomOnlyFav);
     };
 
+    // Expande el grupo que contiene el tema activo y hace scroll hasta él
+    function scrollToActiveTheme() {
+        const activeItem = themeGroups.querySelector('.theme-item.active');
+        if (!activeItem) return;
+        const group = activeItem.closest('.theme-group');
+        if (group && group.classList.contains('collapsed')) {
+            group.classList.remove('collapsed');
+        }
+        setTimeout(() => activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    }
+
+    // ── TOGGLE CARPETAS ──
     let allFoldersCollapsed = false;
     $('btnToggleFolders').onclick = () => {
         allFoldersCollapsed = !allFoldersCollapsed;
@@ -218,11 +267,12 @@
     };
 
     window.deleteTagGlobally = (tagName) => {
-        if (confirm(`¿Eliminar la etiqueta #${tagName} de todos los temas?`)) 
+        if (confirm(`¿Eliminar la etiqueta #${tagName} de todos los temas?`))
             vscode.postMessage({ command: 'deleteTagGlobally', tag: tagName });
     };
 
     // ── ICONOS ──
+    const iconSearch = $('iconSearch');
     function renderIconThemes(filter = '') {
         const q = filter.toLowerCase().trim();
         const list = $('iconList');
@@ -249,7 +299,6 @@
         $('bgImagePath').value = path || '';
         const img = $('bgPreviewImg');
         const label = $('bgPreviewLabel');
-        
         if (path && previewUri) {
             img.src = previewUri;
             img.style.display = 'block';
@@ -261,7 +310,7 @@
         }
         $('btnApplyBg').disabled = !path || !$('masterSwitch').checked;
     }
-    
+
     // ── MASTER SWITCH ──
     $('masterSwitch').onchange = (e) => {
         const isActive = e.target.checked;
@@ -271,21 +320,32 @@
         vscode.postMessage({ command: 'masterSwitch', value: isActive });
     };
 
-    // ── UI UI UI ──
+    // ── UI ──
     function updateSettingsUI() {
         const s = state.currentSettings;
         if (!s) return;
         ['editorFontSize','zoomLevel','scrollbarSize'].forEach(k => {
-            if ($(k)) {
-                $(k).value = s[k]; 
-                $(k+'Val').textContent = s[k];
-            }
+            if ($(k)) { $(k).value = s[k]; $(k+'Val').textContent = s[k]; }
         });
-        uiMinimap.checked = s.minimap;
-        uiMenuVisible.checked = s.menuBar;
-        uiActivityBar.checked = s.activityBarPos;
-        uiStatusBar.checked = s.statusBar;
-        fontFamily.value = s.fontFamily || '';
+        uiMinimap.checked       = s.minimap;
+        uiMenuVisible.checked   = s.menuBar;
+        uiActivityBar.checked   = s.activityBarPos;
+        uiStatusBar.checked     = s.statusBar;
+        uiBreadcrumbs.checked   = s.breadcrumbs !== false;
+        uiLineNumbers.checked   = s.lineNumbers !== false;
+        uiEditorActions.checked = s.editorActions !== false;
+
+        // Fuente
+        const currentFont = s.fontFamily || '';
+        const matchingOpt = [...fontFamilySelect.options].find(o => o.value === currentFont);
+        if (matchingOpt) {
+            fontFamilySelect.value = currentFont;
+            fontFamily.classList.add('hidden');
+        } else if (currentFont) {
+            fontFamilySelect.value = '__custom__';
+            fontFamily.value = currentFont;
+            fontFamily.classList.remove('hidden');
+        }
 
         // Sincronizar slider de opacidad de fondo
         const opVal = Math.round((state.currentBgOpacity || 0.15) * 100);
@@ -293,35 +353,70 @@
         $('bgOpacityVal').textContent = opVal + '%';
     }
 
-    function sendUIUpdates() {
-        vscode.postMessage({
-            command: 'updateUISettings',
-            settings: {
-                editorFontSize: parseInt(editorFontSize.value),
-                zoomLevel: parseFloat(zoomLevel.value),
-                scrollbarSize: parseInt(scrollbarSize.value),
-                minimap: uiMinimap.checked,
-                menuBar: uiMenuVisible.checked,
-                activityBarPos: uiActivityBar.checked,
-                statusBar: uiStatusBar.checked,
-                fontFamily: fontFamily.value
-            }
-        });
+    function buildUISettingsPayload() {
+        const font = fontFamilySelect.value === '__custom__'
+            ? fontFamily.value
+            : fontFamilySelect.value;
+        return {
+            editorFontSize: parseInt(editorFontSize.value),
+            zoomLevel: parseFloat(zoomLevel.value),
+            scrollbarSize: parseInt(scrollbarSize.value),
+            minimap: uiMinimap.checked,
+            menuBar: uiMenuVisible.checked,
+            activityBarPos: uiActivityBar.checked,
+            statusBar: uiStatusBar.checked,
+            breadcrumbs: uiBreadcrumbs.checked,
+            lineNumbers: uiLineNumbers.checked,
+            editorActions: uiEditorActions.checked,
+            fontFamily: font
+        };
     }
 
-    // Sliders vinculación visual y reactividad
+    function sendUIUpdates() {
+        vscode.postMessage({ command: 'updateUISettings', settings: buildUISettingsPayload() });
+    }
+
+    // Sliders
     [editorFontSize, zoomLevel, scrollbarSize].forEach(s => {
-        s.addEventListener('input', () => {
-            $(s.id + 'Val').textContent = s.value;
-            sendUIUpdates();
-        });
+        s.addEventListener('input', () => { $(s.id + 'Val').textContent = s.value; sendUIUpdates(); });
     });
 
-    [uiMinimap, uiMenuVisible, uiActivityBar, uiStatusBar].forEach(cb => {
+    // Checkboxes
+    [uiMinimap, uiMenuVisible, uiActivityBar, uiStatusBar, uiBreadcrumbs, uiLineNumbers, uiEditorActions].forEach(cb => {
         cb.addEventListener('change', sendUIUpdates);
     });
 
+    // Selector de fuente
+    fontFamilySelect.addEventListener('change', () => {
+        const isCustom = fontFamilySelect.value === '__custom__';
+        fontFamily.classList.toggle('hidden', !isCustom);
+        if (!isCustom) sendUIUpdates();
+    });
     fontFamily.addEventListener('change', sendUIUpdates);
+
+    // ── MODO ZEN ──
+    let zenActive = false;
+    let zenPrevState = {};
+
+    $('btnZenMode').onclick = () => {
+        zenActive = true;
+        zenPrevState = buildUISettingsPayload();
+        const zenPayload = {
+            ...zenPrevState,
+            minimap: false, menuBar: false, activityBarPos: false,
+            statusBar: false, breadcrumbs: false, editorActions: false
+        };
+        vscode.postMessage({ command: 'updateUISettings', settings: zenPayload });
+        $('btnZenMode').classList.add('hidden');
+        $('btnZenRestore').classList.remove('hidden');
+    };
+
+    $('btnZenRestore').onclick = () => {
+        zenActive = false;
+        vscode.postMessage({ command: 'updateUISettings', settings: zenPrevState });
+        $('btnZenMode').classList.remove('hidden');
+        $('btnZenRestore').classList.add('hidden');
+    };
 
     // ── CREAR ──
     $('btnCopyTheme').onclick = () => {
@@ -335,6 +430,15 @@
         $$('.color-grid input[type="color"]').forEach(i => colors[i.dataset.key] = i.value);
         vscode.postMessage({ command: 'saveCustomTheme', name, colors });
     };
+
+    // Preview en vivo: cada color picker envía previewCreatorColors
+    $$('.color-grid input[type="color"]').forEach(input => {
+        input.addEventListener('input', () => {
+            const colors = {};
+            $$('.color-grid input[type="color"]').forEach(i => colors[i.dataset.key] = i.value);
+            vscode.postMessage({ command: 'previewCreatorColors', colors });
+        });
+    });
 
     function renderSavedThemes() {
         savedThemes.innerHTML = '';
@@ -350,7 +454,7 @@
         }
     }
 
-    // ── MENSAJES ──
+    // ── MENSAJES DESDE EL HOST ──
     window.addEventListener('message', ev => {
         const msg = ev.data;
         switch (msg.command) {
@@ -361,6 +465,7 @@
                 renderSavedThemes();
                 updateSettingsUI();
                 updateBadges();
+                updateHeartBtn();
                 if (msg.masterSwitchActive !== undefined) {
                     $('masterSwitch').checked = msg.masterSwitchActive;
                     $('btnApplyBg').disabled = !$('bgImagePath').value || !msg.masterSwitchActive;
@@ -377,20 +482,48 @@
                         const val = msg.data.colors[input.dataset.key];
                         if (val) input.value = toHex(val) || input.value;
                     });
+                    // Preview en vivo inmediato al copiar base
+                    const colors = {};
+                    $$('.color-grid input[type="color"]').forEach(i => colors[i.dataset.key] = i.value);
+                    vscode.postMessage({ command: 'previewCreatorColors', colors });
                 }
                 break;
-            case 'fileSelected': setBackgroundPreview(msg.filePath, msg.previewUri); break;
+            case 'fileSelected':
+                setBackgroundPreview(msg.filePath, msg.previewUri);
+                break;
         }
     });
 
+    // Favoritos primero en el select del Creator, con ⭐ y etiquetas
     function populateCopyFrom() {
         copyFromTheme.innerHTML = '<option value="">-- Seleccionar --</option>';
-        state.allThemesFlat.forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t.id || t.label;
-            opt.textContent = `${t.label} (${t.extensionName})`;
-            copyFromTheme.appendChild(opt);
-        });
+        const favs    = state.allThemesFlat.filter(t => t.isFavorite);
+        const nonFavs = state.allThemesFlat.filter(t => !t.isFavorite);
+
+        if (favs.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = '⭐ Favoritos';
+            favs.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id || t.label;
+                const tags = t.tags && t.tags.length ? ` [${t.tags.join(', ')}]` : '';
+                opt.textContent = `⭐ ${t.label}${tags} (${t.extensionName})`;
+                group.appendChild(opt);
+            });
+            copyFromTheme.appendChild(group);
+        }
+
+        if (nonFavs.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = 'Todos los temas';
+            nonFavs.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id || t.label;
+                opt.textContent = `${t.label} (${t.extensionName})`;
+                group.appendChild(opt);
+            });
+            copyFromTheme.appendChild(group);
+        }
     }
 
     function updateBadges() {
@@ -398,15 +531,16 @@
         const found = state.allThemesFlat.find(t => t.id === currentId);
         const displayName = found ? found.label : currentId;
         themeCurrent.textContent = currentId ? `✓ ${displayName}` : '';
-        
+
         const foundIcon = state.iconThemes.find(i => i.id === state.currentIconTheme);
         $('iconCurrentBadge').textContent = foundIcon ? `✓ ${foundIcon.label}` : '';
 
-        // Actualizar versión en su nueva posición
         if (state.version) {
             const vInfo = $('versionInfo');
             if (vInfo) vInfo.textContent = 'v' + state.version;
         }
+
+        updateHeartBtn();
     }
 
     function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
@@ -415,9 +549,9 @@
         return c.length === 9 ? c.substring(0, 7) : c;
     }
 
-    window.applyTheme = applyTheme; // Para botones inline
+    window.applyTheme = applyTheme;
     themeSearch.oninput = () => renderThemes(themeSearch.value);
-    iconSearch.oninput = () => renderIconThemes(iconSearch.value);
+    iconSearch.oninput  = () => renderIconThemes(iconSearch.value);
     vscode.postMessage({ command: 'requestState' });
 
 })();

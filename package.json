@@ -1,8 +1,8 @@
 {
   "name": "theme-manager-by-leostriker",
   "displayName": "Theme Manager By Leostriker",
-  "description": "Gestor visual de temas, iconos y personalización estética para Antigravity",
-  "version": "3.4.0",
+  "description": "Gestor visual de temas, iconos y personalización estética para Antigravity IDE. Incluye fondos de pantalla personalizados mediante inyección documentada de CSS en workbench.desktop.main.css (backup automático garantizado).",
+  "version": "3.4.1",
   "publisher": "leostriker111",
   "license": "MIT",
   "icon": "assets/icon.png",
@@ -99,6 +99,11 @@
           "type": "boolean",
           "default": true,
           "description": "Estado del interruptor maestro de inyecciones CSS"
+        },
+        "themeManager.creatorSelectedTheme": {
+          "type": "string",
+          "default": "",
+          "description": "Tema base seleccionado en el Creator (persiste entre sesiones)"
         }
       }
     }

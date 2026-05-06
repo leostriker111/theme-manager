@@ -96,6 +96,14 @@ El `PanelProvider.js` solo crece en el bloque `Object.assign` — una línea por
 
 ---
 
+## Regla de Documentación Obligatoria
+
+Toda contribución que modifique el comportamiento de la extensión debe incluir la documentación correspondiente. Esto no es opcional. Si añadiste un método a un provider, actualiza la tabla de métodos en `docs/arquitectura.md`. Si añadiste una feature nueva, escribe su entrada en `docs/versiones/vX.Y.Z/changelog.md`. Si tomaste una decisión de diseño no obvia, documéntala en `docs/versiones/vX.Y.Z/decisiones.md`.
+
+La guía completa de qué documentar y dónde está en [`docs/guia_documentacion.md`](./guia_documentacion.md).
+
+---
+
 ## Reportar Bugs
 
 Al abrir un issue, incluye:

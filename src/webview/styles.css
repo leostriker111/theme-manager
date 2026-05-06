@@ -5,6 +5,7 @@
 
 /* ── Reset y base ─────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.hidden { display: none !important; }
 
 :root {
     --accent:       #7c6ff7;
@@ -668,4 +669,112 @@ select:focus {
     font-size: 11px;
     opacity:   0.8;
     display:   block;
+}
+
+/* ── v3.4.1 ─────────────────────────────────────────────────────────────── */
+
+/* Botón corazón — favorito del tema activo */
+.heart-btn {
+    cursor:           pointer;
+    font-size:        18px;
+    line-height:      1;
+    padding:          0 4px;
+    transition:       transform var(--transition);
+    -webkit-user-select: none;
+    user-select:         none;
+}
+.heart-btn:hover  { transform: scale(1.25); }
+.heart-btn.active { filter: drop-shadow(0 0 4px #e05b5b88); }
+
+/* Toolbar de carpetas — debajo de la búsqueda, arriba de las listas */
+.folders-toolbar {
+    padding:    4px 8px 2px;
+    flex-shrink: 0;
+}
+
+.btn-folders {
+    background:    transparent;
+    border:        1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color:         var(--vscode-foreground, #ccc);
+    cursor:        pointer;
+    font-size:     11px;
+    opacity:       0.75;
+    padding:       3px 8px;
+    transition:    opacity var(--transition), background var(--transition);
+    width:         100%;
+    text-align:    left;
+}
+.btn-folders:hover { opacity: 1; background: var(--glass-bg); }
+
+/* Fila del botón Modo Zen */
+.zen-row {
+    display:       flex;
+    gap:           6px;
+    margin-bottom: 10px;
+}
+
+.btn-zen {
+    background:    var(--glass-bg);
+    border:        1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color:         var(--vscode-foreground, #ccc);
+    cursor:        pointer;
+    flex:          1;
+    font-size:     12px;
+    opacity:       0.8;
+    padding:       6px 10px;
+    transition:    all var(--transition);
+}
+.btn-zen:hover { opacity: 1; border-color: var(--accent); background: rgba(124,111,247,0.1); }
+
+.btn-zen-restore {
+    background:    rgba(78,201,160,0.12);
+    border:        1px solid rgba(78,201,160,0.35);
+    border-radius: var(--radius-sm);
+    color:         var(--success);
+    cursor:        pointer;
+    flex:          1;
+    font-size:     12px;
+    padding:       6px 10px;
+    transition:    all var(--transition);
+}
+.btn-zen-restore:hover { background: rgba(78,201,160,0.22); }
+
+/* Hint de atajo de teclado debajo de un checkbox */
+.hint-shortcut {
+    font-size:  10px;
+    opacity:    0.5;
+    margin-left: auto;
+    padding-left: 8px;
+}
+
+/* Fila del selector de fuente con input custom */
+.font-selector-row {
+    display:        flex;
+    flex-direction: column;
+    gap:            6px;
+    margin-top:     4px;
+}
+
+.font-selector-row select,
+.font-selector-row input[type="text"] {
+    background:    var(--vscode-input-background, #3c3c3c);
+    border:        1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color:         var(--vscode-foreground, #ccc);
+    font-size:     12px;
+    padding:       5px 8px;
+    width:         100%;
+}
+.font-selector-row select:focus,
+.font-selector-row input[type="text"]:focus {
+    border-color: var(--accent);
+    outline:      none;
+}
+
+/* Botones utilitarios inline del Creator */
+.saved-theme-apply-btn {
+    padding:   2px 8px;
+    font-size: 10px;
 }

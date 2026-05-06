@@ -29,7 +29,16 @@ function createUiHandlers(_deps) {
         // menuBar y activityBarPos requieren transformar el boolean a una cadena.
         menuBar:        key => [['window.menuBarVisibility', key ? 'visible' : 'toggle']],
         activityBarPos: key => [['workbench.activityBar.location', key ? 'default' : 'hidden']],
-        statusBar:      key => [['workbench.statusBar.visible', key]]
+        statusBar:      key => [['workbench.statusBar.visible', key]],
+        // Panel lateral secundario (chat, etc.) y terminal integrada
+        sidePanel:      key => [['workbench.panel.defaultLocation', key ? 'bottom' : 'bottom'],
+                                ['workbench.sideBar.location', 'left']],
+        // Breadcrumbs (ruta del archivo sobre el editor)
+        breadcrumbs:    key => [['breadcrumbs.enabled', key]],
+        // Números de línea del editor
+        lineNumbers:    key => [['editor.lineNumbers', key ? 'on' : 'off']],
+        // Barra de acciones del editor (botoncitos: split, maximize, etc.)
+        editorActions:  key => [['workbench.editor.showTabs', key ? 'multiple' : 'none']]
     };
 
     return {
