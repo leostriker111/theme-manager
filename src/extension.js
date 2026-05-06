@@ -2,7 +2,7 @@
 // Se activa cuando el usuario abre el panel "Temas" en la barra de actividad
 
 const vscode = require('vscode');
-const GalleryViewProvider = require('./providers/GalleryViewProvider');
+const PanelProvider = require('./providers/PanelProvider');
 
 let mainProvider = null;
 
@@ -13,13 +13,13 @@ let mainProvider = null;
 function activate(context) {
     console.log('[Theme Manager] Extensión activada.');
 
-    const provider = new GalleryViewProvider(context);
+    const provider = new PanelProvider(context);
     mainProvider = provider;
 
     // Registra el WebviewView en la barra lateral
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(
-            GalleryViewProvider.viewId,
+            PanelProvider.viewId,
             provider,
             { webviewOptions: { retainContextWhenHidden: true } }
         )
@@ -52,10 +52,10 @@ function activate(context) {
 
 function deactivate() {
     console.log('[Theme Manager] Extensión desactivada. Iniciando limpieza...');
-    if (mainProvider && mainProvider.creator) {
-        // Intenta limpiar las inyecciones sincrónicamente antes de que muera el proceso.
+    if (mainProvider && mainProvider.bgManager) {
+        // Intenta limpiar las inyecciones de CSS antes de que muera el proceso.
         // Retornar la promesa ayuda a que VS Code espere a que termine la limpieza.
-        return mainProvider.creator.restoreOriginalState().then(() => {
+        return mainProvider.bgManager.restoreOriginalState().then(() => {
             console.log('[Theme Manager] Limpieza completada.');
         });
     }

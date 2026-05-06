@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'none';
+                   style-src {{cspSource}} 'unsafe-inline';
+                   script-src 'nonce-{{nonce}}';
+                   img-src {{cspSource}} data: vscode-file: file:;
+                   font-src {{cspSource}} data:;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="{{cssUri}}"/>
+    <title>Theme Manager</title>
+</head>
+<body>
+    <div id="app">
+        <!-- Pestañas de navegación -->
+        <nav id="tabs">
+            <button class="tab-btn active" data-tab="colors">🎨 Temas</button>
+            <button class="tab-btn" data-tab="icons">🗂 Iconos</button>
+            <button class="tab-btn" data-tab="background">🖼 Fondo</button>
+            <button class="tab-btn" data-tab="ui">🔧 UI</button>
+            <button class="tab-btn" data-tab="creator">✏️ Crear</button>
+        </nav>
+
+        <!-- ── PESTAÑA: TEMAS DE COLOR ─────────────────────────────────── -->
+        <section id="tab-colors" class="tab-content active">
+            <div class="search-bar">
+                <input type="text" id="themeSearch" placeholder="🔍 Buscar tema o #etiqueta..."/>
+                <div id="versionInfo" class="version-text"></div>
+            </div>
+            <div id="themeCurrentBadge" class="current-badge"></div>
+            <div id="themeListContainer">
+                <div id="themeGroups"></div>
+            </div>
+            <!-- Barra flotante de utilidades -->
+            <div class="random-toolbar">
+                <button id="btnToggleFolders" class="btn-secondary btn-push-right" title="Ocultar/Mostrar carpetas de temas">📂 Ocultar Carpetas</button>
+                <div id="btnRandomFav" class="fav-toggle" title="Solo entre favoritos">⭐</div>
+                <button id="btnRandomGeneric" class="btn-random">🎲 Aleatorio</button>
+            </div>
+        </section>
+
+        <!-- ── PESTAÑA: ICONOS ────────────────────────────────────────── -->
+        <section id="tab-icons" class="tab-content">
+            <div class="search-bar">
+                <input type="text" id="iconSearch" placeholder="🔍 Buscar pack de iconos..."/>
+            </div>
+            <div id="iconCurrentBadge" class="current-badge"></div>
+            <div id="iconList"></div>
+        </section>
+
+        <!-- ── PESTAÑA: FONDO ─────────────────────────────────────────── -->
+        <section id="tab-background" class="tab-content">
+            <div class="section-header">
+                <h3>Imagen de fondo</h3>
+                <p class="hint">Selecciona una imagen desde tu equipo. El cambio requiere recargar el IDE.</p>
+            </div>
+            <div class="bg-preview-wrap">
+                <div id="bgPreview" class="bg-preview">
+                    <span id="bgPreviewLabel">Sin imagen</span>
+                    <img id="bgPreviewImg" src="" class="bg-preview-img" alt="Vista previa del fondo seleccionado"/>
+                </div>
+            </div>
+
+            <div class="master-switch-card">
+                <div class="master-switch-row">
+                    <label for="masterSwitch" class="master-switch-label">Habilitar Inyecciones (Master Switch)</label>
+                    <input type="checkbox" id="masterSwitch" aria-label="Habilitar inyecciones de fondo" checked/>
+                </div>
+                <p class="hint master-switch-hint">Apaga este interruptor para remover limpiamente las modificaciones del editor sin desinstalar la extensión.</p>
+            </div>
+
+            <div class="control-group">
+                <button id="btnPickImage" class="btn-primary">📂 Seleccionar imagen</button>
+                <input type="text" id="bgImagePath" placeholder="Ruta de la imagen..." readonly aria-label="Ruta de la imagen de fondo seleccionada"/>
+            </div>
+            <div class="control-group">
+                <label for="bgOpacity">Opacidad</label>
+                <input type="range" id="bgOpacity" min="1" max="99" value="15" aria-label="Opacidad de la imagen de fondo"/>
+                <span id="bgOpacityVal">15%</span>
+            </div>
+            <div class="btn-row">
+                <button id="btnApplyBg" class="btn-primary" disabled>✅ Aplicar fondo</button>
+                <button id="btnRemoveBg" class="btn-danger">❌ Quitar fondo</button>
+            </div>
+            <div class="hint warn">
+                ⚠️ Aplicar una imagen de fondo modifica archivos internos del IDE.
+                Se ha creado un backup original en tu carpeta de Documentos.
+            </div>
+        </section>
+
+        <!-- ── PESTAÑA: PERSONALIZAR UI ───────────────────────────────── -->
+        <section id="tab-ui" class="tab-content">
+            <div class="section-header">
+                <h3>Tamaños y componentes</h3>
+                <p class="hint">Los cambios se aplican inmediatamente.</p>
+            </div>
+
+            <div class="ui-controls">
+                <div class="control-row">
+                    <label for="editorFontSize">Fuente del editor (<span id="editorFontSizeVal">14</span>px)</label>
+                    <input type="range" id="editorFontSize" min="10" max="28" step="1" value="14" aria-label="Tamaño de fuente del editor"/>
+                </div>
+                <div class="control-row">
+                    <label for="zoomLevel">Zoom de la interfaz (<span id="zoomLevelVal">0</span>)</label>
+                    <input type="range" id="zoomLevel" min="-3" max="5" step="0.5" value="0" aria-label="Nivel de zoom de la interfaz"/>
+                </div>
+                <div class="control-row">
+                    <label for="scrollbarSize">Barras de desplazamiento (<span id="scrollbarSizeVal">10</span>px)</label>
+                    <input type="range" id="scrollbarSize" min="4" max="30" step="1" value="10" aria-label="Tamaño de las barras de desplazamiento"/>
+                </div>
+
+                <hr class="ui-divider"/>
+
+                <div class="control-row control-row--inline">
+                    <label for="uiMinimap">Mostrar Minimapa</label>
+                    <input type="checkbox" id="uiMinimap" checked aria-label="Mostrar minimapa del editor"/>
+                </div>
+                <div class="control-row control-row--inline">
+                    <label for="uiMenuVisible">Barra de Menú visible</label>
+                    <input type="checkbox" id="uiMenuVisible" checked aria-label="Mostrar barra de menú"/>
+                </div>
+                <div class="control-row control-row--inline">
+                    <label for="uiActivityBarPos">Barra lateral a la izquierda</label>
+                    <input type="checkbox" id="uiActivityBarPos" checked aria-label="Posición de la barra de actividad"/>
+                </div>
+                <div class="control-row control-row--inline">
+                    <label for="uiStatusBar">Barra inferior (Status Bar)</label>
+                    <input type="checkbox" id="uiStatusBar" checked aria-label="Mostrar barra de estado"/>
+                </div>
+
+                <div class="control-row">
+                    <label for="fontFamily">Familia de fuente</label>
+                    <input type="text" id="fontFamily" placeholder="'Fira Code', monospace" aria-label="Familia de fuente del editor"/>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── PESTAÑA: CREAR TEMA ────────────────────────────────────── -->
+        <section id="tab-creator" class="tab-content">
+            <div class="section-header">
+                <h3>Crear tema personalizado</h3>
+            </div>
+
+            <div class="creator-tools">
+                <div class="control-group">
+                    <label for="newThemeName">Nombre del tema</label>
+                    <input type="text" id="newThemeName" placeholder="Mi Tema Pro"/>
+                </div>
+                <div class="control-group copy-from-group">
+                    <label for="copyFromTheme">Base (Copiar de)</label>
+                    <div class="copy-row">
+                        <select id="copyFromTheme" title="Selecciona un tema como base" aria-label="Tema base para copiar colores">
+                            <option value="">-- Seleccionar --</option>
+                        </select>
+                        <button id="btnCopyTheme" class="btn-secondary">📋 Copiar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="color-grid">
+                <div class="color-row">
+                    <label for="color-editor-bg">Fondo Editor</label>
+                    <input type="color" id="color-editor-bg" data-key="editor.background" value="#1e1e1e" aria-label="Color de fondo del editor"/>
+                </div>
+                <div class="color-row">
+                    <label for="color-editor-fg">Texto Editor</label>
+                    <input type="color" id="color-editor-fg" data-key="editor.foreground" value="#d4d4d4" aria-label="Color de texto del editor"/>
+                </div>
+                <div class="color-row">
+                    <label for="color-sidebar">Sidebar</label>
+                    <input type="color" id="color-sidebar" data-key="sideBar.background" value="#252526" aria-label="Color de fondo del sidebar"/>
+                </div>
+                <div class="color-row">
+                    <label for="color-button">Botones</label>
+                    <input type="color" id="color-button" data-key="button.background" value="#0e639c" aria-label="Color de fondo de botones"/>
+                </div>
+                <div class="color-row">
+                    <label for="color-titlebar">Barra de Título</label>
+                    <input type="color" id="color-titlebar" data-key="titleBar.activeBackground" value="#333333" aria-label="Color de la barra de título"/>
+                </div>
+                <div class="color-row">
+                    <label for="color-terminal">Fondo Terminal</label>
+                    <input type="color" id="color-terminal" data-key="terminal.background" value="#1e1e1e" aria-label="Color de fondo de la terminal"/>
+                </div>
+                <div class="color-row">
+                    <label for="color-linehighlight">Línea Actual</label>
+                    <input type="color" id="color-linehighlight" data-key="editor.lineHighlightBackground" value="#ffffff10" aria-label="Color de resaltado de la línea actual"/>
+                </div>
+                <div class="color-row">
+                    <label for="color-listhover">Hover de Listas</label>
+                    <input type="color" id="color-listhover" data-key="list.hoverBackground" value="#2a2d2e" aria-label="Color de hover en listas"/>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button id="btnSaveTheme" class="btn-primary">💾 Guardar</button>
+            </div>
+
+            <div class="section-header section-header--spaced">
+                <h3>Mis Temas Guardados</h3>
+            </div>
+            <div id="savedThemesList" class="saved-themes-list"></div>
+        </section>
+    </div>
+
+    <script nonce="{{nonce}}" src="{{jsUri}}"></script>
+</body>
+</html>
