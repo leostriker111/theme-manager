@@ -2,7 +2,7 @@
   "name": "theme-manager-by-leostriker",
   "displayName": "Theme Manager By Leostriker",
   "description": "Gestor visual de temas, iconos y personalización estética para Antigravity",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "publisher": "leostriker111",
   "license": "MIT",
   "icon": "assets/icon.png",
@@ -91,6 +91,11 @@
           "type": "object",
           "default": {},
           "description": "Mapeo de etiquetas por tema (ID -> array de etiquetas)"
+        },
+        "themeManager.masterSwitchActive": {
+          "type": "boolean",
+          "default": true,
+          "description": "Estado del interruptor maestro de inyecciones CSS"
         }
       }
     }

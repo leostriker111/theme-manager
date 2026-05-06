@@ -629,3 +629,43 @@ select:focus {
 .master-switch-card input[type="checkbox"]:checked::after {
     transform: translateX(14px);
 }
+
+/* ── Clases utilitarias extraídas de estilos inline ───────────────────────── */
+
+/* Botón que empuja los elementos siguientes hacia la derecha (margin-right: auto) */
+.btn-push-right { margin-right: auto; }
+
+/* Imagen de preview de fondo oculta por defecto; JS la muestra cuando hay selección */
+.bg-preview-img { display: none; }
+
+/* Fila del master switch: checkbox a la derecha, label a la izquierda */
+.master-switch-row {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+    margin-bottom:   10px;
+}
+
+.master-switch-label { font-weight: bold; }
+
+.master-switch-hint { margin: 0; font-size: 0.85em; opacity: 0.8; }
+
+/* Separador sutil dentro de la pestaña UI */
+.ui-divider { opacity: 0.1; margin: 10px 0; }
+
+/* Control-row con dirección horizontal para checkboxes + label inline */
+.control-row--inline {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items:     center;
+}
+
+/* Margen superior para la sección de "Mis Temas Guardados" en el Creator */
+.section-header--spaced { margin-top: 20px; }
+
+/* Etiquetas accesibles para inputs de color en la grilla del Creator */
+.color-row label {
+    font-size: 11px;
+    opacity:   0.8;
+    display:   block;
+}

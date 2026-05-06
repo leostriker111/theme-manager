@@ -5,3 +5,4 @@
 *.log
 backups/**
 releases/**
+docs/**

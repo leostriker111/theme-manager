@@ -120,6 +120,16 @@ class ThemeScanner {
         }
         return flat;
     }
+
+    /**
+     * Invalida los cachés de temas e iconos para forzar un re-escaneo
+     * en la próxima llamada a getColorThemes() o getIconThemes().
+     * Usar este método en lugar de acceder a _colorThemesCache directamente.
+     */
+    invalidateCache() {
+        this._colorThemesCache = null;
+        this._iconThemesCache  = null;
+    }
 }
 
 module.exports = ThemeScanner;
